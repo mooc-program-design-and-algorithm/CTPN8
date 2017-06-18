@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         protobuf-compiler \
         python-dev \
         python-numpy \
+        python-opencv \
         python-pip \
         python-setuptools \
         python-scipy && \
@@ -50,14 +51,10 @@ RUN echo "$CTPN_ROOT/CTPN/caffe/build/lib" >> /etc/ld.so.conf.d/caffe.conf && ld
 RUN cp $CTPN_ROOT/CTPN/src/layers/* $CTPN_ROOT/CTPN/caffe/src/caffe/layers/
 RUN cp $CTPN_ROOT/CTPN/src/*.py $CTPN_ROOT/CTPN/caffe/src/caffe/
 RUN cp -r $CTPN_ROOT/CTPN/src/utils $CTPN_ROOT/CTPN/caffe/src/caffe/
-RUN cd ~ && mkdir -p ocv-tmp && cd ocv-tmp && wget https://github.com/Itseez/opencv/archive/2.4.12.zip
-RUN cd ~/ocv-tmp && unzip 2.4.12.zip && cd opencv-2.4.12 && mkdir release
-RUN cd ~/ocv-tmp/opencv-2.4.12/release && cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D BUILD_PYTHON_SUPPORT=ON .. && make -j8 && make install && rm -rf ~/ocv-tmp
 WORKDIR $CTPN_ROOT/CTPN
 RUN make
 RUN pip install --upgrade numpy
-WORKDIR $CTPN_ROOT/CTPN/models
-RUN wget https://www.dropbox.com/s/yyj53aet2emhvs7/ctpn_trained_model.caffemodel
+RUN wget "https://www.dropbox.com/s/yyj53aet2emhvs7/ctpn_trained_model.caffemodel?dl=1" -O $CTPN_ROOT/CTPN/models/ctpn_trained_model.caffemodel
 WORKDIR $CTPN_ROOT/CTPN
 RUN mkdir /opt/ctpn/CTPN/output
 VOLUME ['/opt/ctpn/CTPN/output/']
@@ -67,11 +64,3 @@ RUN mkdir -p -m 700 /root/.jupyter/ && \
 WORKDIR /opt/ctpn/CTPN/
 EXPOSE 8888
 CMD ["jupyter", "notebook", "--no-browser", "--allow-root"]
-RUN apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main" > /etc/apt/sources.list.d/pgdg.list
-RUN apt-get update && apt-get install -y postgresql-client-9.6 zip libpq-dev libssl-dev
-RUN git clone https://github.com/akshayubhat/DeepVideoAnalytics /root/DVA
-WORKDIR "/root/DVA"
-RUN pip install --upgrade cffi
-RUN pip install -r requirements.txt
-VOLUME ["/root/DVA/dva/media"]
