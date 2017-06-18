@@ -1,4 +1,4 @@
-FROM nvidia/cuda:7.0-cudnn3-devel
+FROM nvidia/cuda:8.0-cudnn5-devel-ubuntu14.04
 MAINTAINER Akshay Bhat <akshayubhat@gmail.com>
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -29,7 +29,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV CTPN_ROOT=/opt/ctpn
 WORKDIR $CTPN_ROOT
 
-RUN git clone --depth 1 https://github.com/tianzhi0549/CTPN.git
+RUN git clone https://github.com/AKSHAYUBHAT/CTPN8.git
+RUN mv $CTPN_ROOT/CTPN/caffe_temp $CTPN_ROOT/CTPN/caffe
 WORKDIR $CTPN_ROOT/CTPN/caffe
 
 # Missing "packaging" package
@@ -55,8 +56,9 @@ RUN cd ~/ocv-tmp/opencv-2.4.12/release && cmake -D CMAKE_BUILD_TYPE=RELEASE -D C
 WORKDIR $CTPN_ROOT/CTPN
 RUN make
 RUN pip install --upgrade numpy
-ADD ctpn_trained_model.caffemodel $CTPN_ROOT/CTPN/models/
-ADD tools/demo.py $CTPN_ROOT/CTPN/tools/demo.py
+WORKDIR $CTPN_ROOT/CTPN/models
+RUN wget https://www.dropbox.com/s/yyj53aet2emhvs7/ctpn_trained_model.caffemodel
+WORKDIR $CTPN_ROOT/CTPN
 RUN mkdir /opt/ctpn/CTPN/output
 VOLUME ['/opt/ctpn/CTPN/output/']
 RUN pip install --upgrade jupyter
